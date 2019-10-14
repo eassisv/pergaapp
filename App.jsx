@@ -35,10 +35,15 @@ export default class App extends React.Component {
   async buttonPressHandle() {
     this.setState({ loading: true });
     const { user, password } = this.state;
+    if (user === "" || password === "") {
+      this.setModalFeedback("Digite a matrícula e a senha");
+      return;
+    }
     const baseUrl = "http://consulta.uffs.edu.br/pergamum/biblioteca_s";
     const loginUrl = `${baseUrl}/php/login_usu.php`;
     const indexUrl = `${baseUrl}/meu_pergamum/index.php`;
     const renewUrl = `${indexUrl}?rs=ajax_renova&rst=`;
+    const logoutUrl = `${baseUrl}/meu_pergamum/logout.php`;
     let res;
     let booksUrl;
     try {
@@ -75,14 +80,15 @@ export default class App extends React.Component {
             ${args[2]}&rsargs[]=${weirdCode}`
         );
     } catch (error) {
-      this.setModalFeedback("Matrícula ou senha incorreta\n😧😧😧");
+      this.setModalFeedback("Matrícula ou senha incorreta\n");
       return;
     }
     try {
       await axios.all(booksUrl.map(url => axios.get(url)));
       res = await axios.get(indexUrl);
       const returnDate = res.data.match("\\d+\\/\\d+\\/\\d+").join();
-      this.setModalFeedback(`Livros renovados até ${returnDate}\n🎉😎🎉`);
+      await axios.get(logoutUrl);
+      this.setModalFeedback(`Livros renovados até ${returnDate}\n😎🎊🎉`);
     } catch (error) {
       this.setModalFeedback(
         "Aconteceu um erro inesperado, você vai ter que acessar o site\n😢😢😢"
