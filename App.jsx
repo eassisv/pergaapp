@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Input, Button } from "react-native-elements";
+import axios from "axios";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -22,7 +23,53 @@ export default class App extends React.Component {
     this.setState({ password: text });
   }
 
-  buttonPressHandle() {}
+  async buttonPressHandle() {
+    this.setState({ loading: true });
+    const { user, password } = this.state;
+    const pergaUrl = "http://consulta.uffs.edu.br/pergamum/biblioteca_s";
+
+    try {
+      const res = await axios.post(
+        `${pergaUrl}/php/login_usu.php`,
+        `login=1611100027&password=2410`,
+        {
+          headers: {
+            Host: "consulta.uffs.edu.br",
+            Referer:
+              "http://consulta.uffs.edu.br/pergamum/biblioteca_s/php/login_usu.php?flag=index.php",
+            "content-type": "application/x-www-form-urlencoded"
+          }
+        }
+      );
+
+      // TODO: id_codigoreduzido_anteriorPendente
+
+      const weirdCode = res.data
+        .match(
+          '<input.*type="hidden".*id="id_codigoreduzido_anteriorPendente".*>'
+        )
+        .map(input => input.match("\\d+").join())
+        .join();
+
+      const booksUrl = res.data
+        .match(RegExp('<input.*onclick="javascript:renova.*>', "g"))
+        .map(
+          input => input.match(RegExp("\\d+", "g"))
+          // .join()
+          // .split(RegExp("(,|',')"))
+          // .filter(num => num.replace(RegExp("'", "g"), ""))
+        )
+        .map(
+          args =>
+            `index.php?rs=ajax_renova&rst=&rsrnd=${new Date().getTime()}&rsargs[]=${
+              args[0]
+            }&rsargs[]=${args[1]}&rsargs[]=${args[2]}&rsargs[]=${weirdCode}`
+        );
+    } catch (error) {
+      console.log(error);
+    }
+    this.setState({ loading: false });
+  }
 
   render() {
     const { user, password, loading } = this.state;
