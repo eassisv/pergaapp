@@ -44,7 +44,7 @@ export default class SignInScreen extends React.Component {
         <Button
           containerStyle={styles.button}
           buttonStyle={{ backgroundColor: "#005f8f" }}
-          title="renovar livros"
+          title="Entrar"
           // loading={loading}
           // disabled={loading}
           onPress={() => navigation.navigate("Home", { user, password })}
